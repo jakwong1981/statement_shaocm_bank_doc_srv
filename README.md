@@ -109,7 +109,7 @@ statement_shaocm_bank_doc_srv/
 │       │   ├── controller/         # REST controllers (Admin + External)
 │       │   ├── dto/                # Request/Response DTOs
 │       │   ├── entity/             # JPA entities + enums
-│       │   ├── exception/          # Global error handler
+│       │   ├── exception/          # Global error handler + error logging
 │       │   ├── repository/         # Spring Data JPA interfaces
 │       │   ├── security/           # JWT, API Key, HMAC filters
 │       │   ├── service/            # Business logic layer
@@ -118,7 +118,8 @@ statement_shaocm_bank_doc_srv/
 │           ├── application.yml     # Multi-profile configuration
 │           ├── data.sql            # Seed data (dev/sit)
 │           └── db/migration/
-│               └── V1__init_schema.sql  # DB2 DDL
+│               ├── V1__init_schema.sql     # DB2 DDL
+│               └── V2__add_system_error_logs.sql  # Error log table
 └── frontend/
     ├── package.json                # NPM dependencies
     ├── Dockerfile                  # Multi-stage build (Node → NGINX)
@@ -145,6 +146,7 @@ statement_shaocm_bank_doc_srv/
 - **Asynchronous Processing** — RabbitMQ-driven message queue for non-blocking watermark operations
 - **Role-Based Access Control** — Three-tier permission model (SUPER_ADMIN, OPERATOR, AUDITOR)
 - **Immutable Audit Trail** — Track all system actions with actor, timestamp, IP, and user agent
+- **System Error Logging** — Automatic capture of all exceptions with stack traces, searchable by timestamp
 - **Third-Party Client Management** — Issue API keys and secrets for external integrations
 - **S3-Compatible Storage** — MinIO for scalable, distributed file storage
 - **Multi-Environment Support** — Dev (H2), SIT (H2 + Docker), and Production (DB2) profiles
@@ -284,6 +286,21 @@ The `WatermarkEngine` uses Apache PDFBox 3.x to apply four distinct watermark zo
 | USER_AGENT | VARCHAR(500) | Browser/client info |
 | CREATED_AT | TIMESTAMP | Event time |
 
+### SYSTEM_ERROR_LOGS
+
+| Column | Type | Description |
+|--------|------|-------------|
+| ID | BIGINT PK | Auto-increment ID |
+| ERROR_MESSAGE | VARCHAR(2000) | Exception message |
+| EXCEPTION_CLASS | VARCHAR(500) | Fully qualified exception class |
+| STACK_TRACE | CLOB | Full stack trace |
+| HTTP_METHOD | VARCHAR(10) | GET, POST, etc. |
+| REQUEST_URI | VARCHAR(1000) | Request path |
+| HTTP_STATUS | INTEGER | HTTP response status code |
+| USER_AGENT | VARCHAR(512) | Client browser/agent info |
+| IP_ADDRESS | VARCHAR(45) | Client IP address |
+| CREATED_AT | TIMESTAMP | Error occurrence time |
+
 ---
 
 ## API Reference
@@ -302,6 +319,7 @@ The `WatermarkEngine` uses Apache PDFBox 3.x to apply four distinct watermark zo
 | POST | `/api/v1/admin/clients` | Create new client | SUPER_ADMIN |
 | PATCH | `/api/v1/admin/clients/{id}/status` | Update client status | SUPER_ADMIN |
 | GET | `/api/v1/admin/audit-logs` | Query audit trail | AUDITOR, SUPER_ADMIN |
+| GET | `/api/v1/admin/error-logs` | Query system error logs (supports `from`/`to` timestamp filter) | SUPER_ADMIN |
 
 ### External API (API Key + HMAC)
 
@@ -352,6 +370,7 @@ Response:
 | `/reports` | ReportsView | Authenticated | Report management (upload, list, download) |
 | `/clients` | ClientsView | SUPER_ADMIN | Third-party client management |
 | `/audit-logs` | AuditLogsView | AUDITOR+ | Audit trail browser |
+| `/error-logs` | ErrorLogsView | SUPER_ADMIN | System error log viewer with timestamp filter |
 
 ### State Management (Pinia Stores)
 
@@ -365,6 +384,7 @@ Response:
 
 - Unauthenticated users are redirected to `/login`
 - `/clients` route requires `SUPER_ADMIN` role
+- `/error-logs` route requires `SUPER_ADMIN` role
 - `/audit-logs` route requires `AUDITOR` or `SUPER_ADMIN` role
 - API 401 responses auto-clear tokens and redirect to login
 
@@ -463,7 +483,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed production deployment guide.
 
 | Username | Password | Role | Permissions |
 |----------|----------|------|-------------|
-| admin | admin123 | SUPER_ADMIN | Full access (reports, clients, audit logs) |
+| admin | admin123 | SUPER_ADMIN | Full access (reports, clients, audit logs, error logs) |
 | operator | admin123 | OPERATOR | Report upload, list, download |
 | auditor | admin123 | AUDITOR | Report list, download, audit log access |
 

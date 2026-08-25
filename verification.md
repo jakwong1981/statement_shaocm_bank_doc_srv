@@ -13,6 +13,7 @@ Step-by-step testing procedures for the SIT Docker environment.
 - [5. Infrastructure Consoles](#5-infrastructure-consoles)
 - [6. Quick Health Check](#6-quick-health-check)
 - [7. Full End-to-End Test Flow](#7-full-end-to-end-test-flow)
+- [8. System Error Logs](#8-system-error-logs)
 
 ---
 
@@ -48,6 +49,7 @@ Look for: `Started ReportCentreApplication in X seconds`
 | Navigate to **Reports** | Should show empty report list |
 | Navigate to **Clients** | Should show third-party clients (SUPER_ADMIN only) |
 | Navigate to **Audit Logs** | Should show audit trail |
+| Navigate to **Error Logs** (SUPER_ADMIN) | Should show error log viewer with timestamp filter |
 
 ---
 
@@ -224,6 +226,8 @@ SELECT username, role, is_active FROM users;
 
 -- Check third-party clients
 SELECT id, client_name, api_key, status FROM third_party_clients;
+-- Check system error logs
+SELECT id, http_status, http_method, request_uri, exception_class, error_message, created_at FROM system_error_logs ORDER BY created_at DESC;
 ```
 
 ---
@@ -261,11 +265,12 @@ Execute these steps in order to validate the complete system:
 | 9 | Download: `GET /api/v1/admin/reports/{id}/download` | Watermarked PDF downloaded |
 | 10 | Open downloaded PDF | Watermark zones visible (header, diagonal, footer, QR) |
 | 11 | Check audit logs: `GET /api/v1/admin/audit-logs` | LOGIN + UPLOAD + DOWNLOAD entries |
-| 12 | Check MinIO console | Files in `report-staging-raw` and `report-staging-watermarked` |
-| 13 | Check H2 console: `SELECT * FROM REPORTS` | Report row with READY status |
-| 14 | Create client: `POST /api/v1/admin/clients` | API key returned |
-| 15 | External upload: `POST /api/v1/external/reports` with API key | Report ingested and watermarked |
-| 16 | `docker-compose down` | All containers stopped |
+| 12 | Check error logs: `GET /api/v1/admin/error-logs` | Error entries captured (if any errors occurred) |
+| 13 | Check MinIO console | Files in `report-staging-raw` and `report-staging-watermarked` |
+| 14 | Check H2 console: `SELECT * FROM REPORTS` | Report row with READY status |
+| 15 | Create client: `POST /api/v1/admin/clients` | API key returned |
+| 16 | External upload: `POST /api/v1/external/reports` with API key | Report ingested and watermarked |
+| 17 | `docker-compose down` | All containers stopped |
 
 ---
 
@@ -280,3 +285,51 @@ Execute these steps in order to validate the complete system:
 | Frontend shows blank page | Check browser console for API errors, verify backend is accessible at port 8080 |
 | H2 console won't connect | Ensure JDBC URL is exactly `jdbc:h2:mem:reportdb` with user `sa` and empty password |
 | Port already in use | Check with `lsof -i :8080` or `lsof -i :8880` and stop conflicting processes |
+| CORS 403 from browser | Ensure `SecurityConfig` has `.cors(Customizer.withDefaults())` and `WebConfig` allows `http://localhost:8880` |
+
+---
+
+## 8. System Error Logs
+
+The system automatically captures all exceptions thrown by Spring controllers into the `SYSTEM_ERROR_LOGS` table.
+
+### 8.1 Trigger a Test Error
+
+```bash
+# This should return 400 "Invalid credentials" and log the error
+curl -s -X POST http://localhost:8080/api/v1/admin/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"wrong_password"}'
+```
+
+### 8.2 Query Error Logs via API
+
+```bash
+curl -s http://localhost:8080/api/v1/admin/error-logs \
+  -H "Authorization: Bearer <your-access-token>" | python3 -m json.tool
+```
+
+Expected: paginated response with error entries containing `errorMessage`, `exceptionClass`, `stackTrace`, `httpMethod`, `requestUri`, `httpStatus`, and `createdAt`.
+
+### 8.3 Filter by Timestamp
+
+```bash
+curl -s "http://localhost:8080/api/v1/admin/error-logs?from=2026-08-25T00:00:00Z&to=2026-08-26T00:00:00Z" \
+  -H "Authorization: Bearer <your-access-token>" | python3 -m json.tool
+```
+
+### 8.4 Verify in H2 Console
+
+```sql
+SELECT id, http_status, http_method, request_uri, exception_class, error_message, created_at
+FROM system_error_logs
+ORDER BY created_at DESC;
+```
+
+### 8.5 Verify in Frontend (SUPER_ADMIN)
+
+1. Login as `admin` at http://localhost:8880
+2. Navigate to **Error Logs** in the sidebar
+3. Use the **From** / **To** datetime pickers to filter by time range
+4. Click **Search** to apply the filter
+5. Click **Details** on any entry to view the full stack trace

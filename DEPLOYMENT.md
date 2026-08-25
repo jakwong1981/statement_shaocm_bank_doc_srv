@@ -411,6 +411,7 @@ export MINIO_SECRET_KEY=your_secret_key
 ```bash
 db2 connect to REPORTDB user db2inst1
 db2 -tvf backend/src/main/resources/db/migration/V1__init_schema.sql
+db2 -tvf backend/src/main/resources/db/migration/V2__add_system_error_logs.sql
 db2 -tvf backend/src/main/resources/data.sql
 ```
 
@@ -487,6 +488,7 @@ server {
 | `/api/v1/admin/clients` | POST | SUPER_ADMIN | Create new client |
 | `/api/v1/admin/clients/{id}/status` | PATCH | SUPER_ADMIN | Suspend/reactivate client |
 | `/api/v1/admin/audit-logs` | GET | AUDITOR, SUPER_ADMIN | Query audit trail |
+| `/api/v1/admin/error-logs` | GET | SUPER_ADMIN | Query system error logs (supports `from`/`to` timestamp filter) |
 
 ### External Endpoints (API Key + HMAC required)
 
@@ -546,8 +548,9 @@ curl -X POST http://localhost:8080/api/v1/admin/auth/login \
 |---|---|
 | "npm not recognized" | Install Node.js 18+ from https://nodejs.org; restart terminal |
 | "Module not found" | Delete `node_modules`, run `npm install` again |
-| "CORS error in browser" | Ensure backend is running on port 8080 and WebConfig CORS is set |
+| "CORS error in browser" | Ensure backend WebConfig includes your frontend origin (e.g. `http://localhost:8880`); SecurityConfig must have `.cors(Customizer.withDefaults())` enabled |
 | "401 on every request" | Check browser localStorage has `accessToken`; re-login if expired |
+| "403 on login from browser" | CORS issue — ensure `SecurityConfig` has `.cors(Customizer.withDefaults())` and `WebConfig` allows the frontend origin |
 
 ### Watermark Issues
 
