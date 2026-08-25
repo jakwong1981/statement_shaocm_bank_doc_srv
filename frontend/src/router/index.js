@@ -35,6 +35,12 @@ const routes = [
     component: () => import('../views/AuditLogsView.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/error-logs',
+    name: 'ErrorLogs',
+    component: () => import('../views/ErrorLogsView.vue'),
+    meta: { requiresAuth: true, role: 'SUPER_ADMIN' },
+  },
 ];
 
 const router = createRouter({

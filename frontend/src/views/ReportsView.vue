@@ -7,6 +7,7 @@
         <router-link to="/reports">Reports</router-link>
         <router-link to="/clients" v-if="auth.role === 'SUPER_ADMIN'">Clients</router-link>
         <router-link to="/audit-logs">Audit Logs</router-link>
+        <router-link to="/error-logs" v-if="auth.role === 'SUPER_ADMIN'">Error Logs</router-link>
       </nav>
       <button class="logout-btn" @click="auth.logout(); $router.push('/login')">Logout</button>
     </aside>
