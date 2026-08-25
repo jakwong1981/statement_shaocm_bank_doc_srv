@@ -97,6 +97,7 @@ Enterprise-grade PDF report ingestion, watermarking, and management platform. Th
 ```
 statement_shaocm_bank_doc_srv/
 ├── docker-compose.yml              # Multi-service orchestration
+├── startapp.sh                     # One-command startup + smoke tests
 ├── docker/
 │   └── minio-init.sh               # MinIO bucket initialization
 ├── backend/
@@ -424,6 +425,7 @@ Response:
 | `MINIO_ENDPOINT` | `http://minio:9000` | MinIO server URL |
 | `MINIO_ACCESS_KEY` | `minioadmin` | MinIO access key |
 | `MINIO_SECRET_KEY` | `minioadmin` | MinIO secret key |
+| `SPRING_AMQP_DESERIALIZATION_TRUST_ALL` | `true` | Trust all Java classes in RabbitMQ messages (required for Spring AMQP 3.x) |
 | `JWT_SECRET` | (in config) | JWT signing key |
 | `JWT_EXPIRATION_MS` | `3600000` | Token expiry (1 hour) |
 
@@ -431,25 +433,31 @@ Response:
 
 | Bucket | Purpose |
 |--------|---------|
-| `staging` | Raw uploaded PDFs (pre-watermark) |
+| `staging-raw` | Raw uploaded PDFs (pre-watermark) |
 | `reports-watermarked` | Processed watermarked PDFs |
 
 ---
 
 ## Deployment
 
-### Quick Start (Docker Compose)
+### Quick Start
 
 ```bash
 # Clone the repository
 git clone https://github.com/jakwong1981/statement_shaocm_bank_doc_srv.git
 cd statement_shaocm_bank_doc_srv
 
-# Build and start all containers
-docker-compose up -d --build
+# Build, start, and run smoke tests
+./startapp.sh --smoke
 
-# Check container status
-docker-compose ps
+# Or just build and start (without smoke tests)
+./startapp.sh
+
+# Check status
+./startapp.sh --status
+
+# Stop all services
+./startapp.sh --stop
 ```
 
 Access the application:
