@@ -41,9 +41,26 @@ public class ReportService {
     public ReportResponse upload(MultipartFile file, String benchmarkTag,
                                   String metadata, UploaderType uploaderType,
                                   String uploaderId) {
+        return uploadOrReplace(null, file, benchmarkTag, metadata, uploaderType, uploaderId);
+    }
+
+    public ReportResponse uploadOrReplace(String reportId, MultipartFile file, String benchmarkTag,
+                                           String metadata, UploaderType uploaderType,
+                                           String uploaderId) {
         validatePdf(file);
 
-        String reportId = UUID.randomUUID().toString();
+        // If reportId provided and report exists → replace mode
+        if (reportId != null && !reportId.isBlank() && reportRepository.existsById(reportId)) {
+            return replaceReport(reportId, file, benchmarkTag, metadata, uploaderType, uploaderId);
+        }
+
+        // Create new (use provided reportId or generate new one)
+        String newId = (reportId != null && !reportId.isBlank()) ? reportId : UUID.randomUUID().toString();
+        return createReport(newId, file, benchmarkTag, metadata, uploaderType, uploaderId);
+    }
+
+    private ReportResponse createReport(String reportId, MultipartFile file, String benchmarkTag,
+                                         String metadata, UploaderType uploaderType, String uploaderId) {
         String objectName = reportId + ".pdf";
 
         try {
@@ -66,14 +83,64 @@ public class ReportService {
                 .build();
         reportRepository.save(report);
 
+        publishWatermarkMessage(reportId, objectName, benchmarkTag, uploaderId);
+        log.info("Report {} uploaded and queued for watermarking", reportId);
+        return toResponse(report);
+    }
+
+    private ReportResponse replaceReport(String reportId, MultipartFile file, String benchmarkTag,
+                                          String metadata, UploaderType uploaderType, String uploaderId) {
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new ResourceNotFoundException("Report not found: " + reportId));
+
+        // Delete old files from MinIO (best-effort, log warnings on failure)
+        if (report.getRawStoragePath() != null) {
+            storageService.deleteFromStaging(report.getRawStoragePath());
+        }
+        if (report.getWatermarkedStoragePath() != null) {
+            storageService.deleteFromWatermarked(report.getWatermarkedStoragePath());
+        }
+
+        // Upload new file
+        String objectName = reportId + ".pdf";
+        try {
+            storageService.uploadRaw(objectName, file.getInputStream(),
+                    file.getSize(), "application/pdf");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read uploaded file", e);
+        }
+
+        // Update entity
+        report.setOriginalFilename(file.getOriginalFilename());
+        report.setFileSizeBytes(file.getSize());
+        report.setRawStoragePath(objectName);
+        report.setWatermarkedStoragePath(null);
+        report.setChecksumSha256(null);
+        report.setPageCount(null);
+        report.setErrorReason(null);
+        report.setStatus(ReportStatus.PENDING_WATERMARK);
+        report.setUploadedByType(uploaderType);
+        report.setUploadedById(uploaderId);
+        if (benchmarkTag != null) {
+            report.setBenchmarkTag(benchmarkTag);
+        }
+        if (metadata != null) {
+            report.setMetadata(metadata);
+        }
+        reportRepository.save(report);
+
+        publishWatermarkMessage(reportId, objectName, benchmarkTag, uploaderId);
+        log.info("Report {} replaced and re-queued for watermarking", reportId);
+        return toResponse(report);
+    }
+
+    private void publishWatermarkMessage(String reportId, String objectName,
+                                          String benchmarkTag, String uploaderId) {
         rabbitTemplate.convertAndSend(exchange, routingKey,
                 Map.of("reportId", reportId,
                        "rawStoragePath", objectName,
                        "benchmarkTag", benchmarkTag != null ? benchmarkTag : "",
                        "uploaderId", uploaderId));
-
-        log.info("Report {} uploaded and queued for watermarking", reportId);
-        return toResponse(report);
     }
 
     public ReportResponse getReport(String id) {

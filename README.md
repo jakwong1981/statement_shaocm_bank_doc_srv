@@ -325,17 +325,30 @@ The `WatermarkEngine` uses Apache PDFBox 3.x to apply four distinct watermark zo
 
 | Method | Endpoint | Description | Header |
 |--------|----------|-------------|--------|
-| POST | `/api/v1/external/reports` | Upload PDF report | `X-API-KEY` |
+| POST | `/api/v1/external/reports` | Upload PDF report (optional `report_id` to replace existing) | `X-API-KEY` |
 | GET | `/api/v1/external/reports/{id}` | Check report status | `X-API-KEY` |
 | GET | `/api/v1/external/reports/{id}/download` | Download watermarked PDF | `X-API-KEY` |
 
-### Example: External Upload
+### Example: External Upload (New Report)
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/external/reports \
   -H "X-API-KEY: your-api-key-here" \
   -H "X-Signature: sha256=computed_hmac_signature" \
   -F "file=@report.pdf" \
+  -F "benchmarkTag=BM-2024-Q1"
+```
+
+### Example: External Upload (Replace Existing Report)
+
+If `report_id` is provided and exists in the database, the original file is deleted and replaced with the new upload. The report status is reset to `PENDING_WATERMARK` and re-processed.
+
+```bash
+curl -X POST http://localhost:8080/api/v1/external/reports \
+  -H "X-API-KEY: your-api-key-here" \
+  -H "X-Signature: sha256=computed_hmac_signature" \
+  -F "file=@updated_report.pdf" \
+  -F "report_id=existing-report-uuid-here" \
   -F "benchmarkTag=BM-2024-Q1"
 ```
 

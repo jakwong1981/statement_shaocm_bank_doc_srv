@@ -50,6 +50,12 @@ public class AdminReportController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('OPERATOR', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<ReportResponse>> getReport(@PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.success(reportService.getReport(id)));
+    }
+
     @GetMapping("/{id}/download")
     @PreAuthorize("hasAnyRole('OPERATOR', 'SUPER_ADMIN')")
     public ResponseEntity<InputStreamResource> download(@PathVariable String id) {

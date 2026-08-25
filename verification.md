@@ -160,14 +160,31 @@ curl -s -X POST http://localhost:8080/api/v1/external/reports \
   -F "benchmarkTag=BM-EXT-001" | python3 -m json.tool
 ```
 
-### 4.3 Check Report Status
+### 4.3 Replace Existing Report via External API
+
+If `report_id` is provided and exists in the database, the original file is deleted from MinIO and replaced with the new upload. The report status is reset to `PENDING_WATERMARK` and re-processed.
+
+```bash
+# Save the report_id from the previous upload response
+REPORT_ID="<report-id-from-step-4.2>"
+
+curl -s -X POST http://localhost:8080/api/v1/external/reports \
+  -H "X-API-KEY: <your-api-key>" \
+  -F "file=@test.pdf" \
+  -F "report_id=$REPORT_ID" \
+  -F "benchmarkTag=BM-EXT-001-UPDATED" | python3 -m json.tool
+```
+
+Expected: Same `report_id` returned, status reset to `PENDING_WATERMARK`, `watermarkedAt` is null.
+
+### 4.4 Check Report Status
 
 ```bash
 curl -s http://localhost:8080/api/v1/external/reports/<report-id> \
   -H "X-API-KEY: <your-api-key>" | python3 -m json.tool
 ```
 
-### 4.4 Download Watermarked PDF
+### 4.5 Download Watermarked PDF
 
 ```bash
 curl -o ext_watermarked.pdf -X GET http://localhost:8080/api/v1/external/reports/<report-id>/download \
@@ -270,7 +287,8 @@ Execute these steps in order to validate the complete system:
 | 14 | Check H2 console: `SELECT * FROM REPORTS` | Report row with READY status |
 | 15 | Create client: `POST /api/v1/admin/clients` | API key returned |
 | 16 | External upload: `POST /api/v1/external/reports` with API key | Report ingested and watermarked |
-| 17 | `docker-compose down` | All containers stopped |
+| 17 | External replace: `POST /api/v1/external/reports` with `report_id` | Same reportId returned, status reset to PENDING_WATERMARK |
+| 18 | `docker-compose down` | All containers stopped |
 
 ---
 

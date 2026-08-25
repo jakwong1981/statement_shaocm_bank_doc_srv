@@ -27,8 +27,8 @@
       -c "
       sleep 10 &&
       mc alias set sitminio http://minio:9000 minioadmin minioadmin &&
-      mc mb --ignore-existing sitminio/report-staging-raw &&
-      mc mb --ignore-existing sitminio/report-staging-watermarked &&
+      mc mb --ignore-existing sitminio/staging-raw &&
+      mc mb --ignore-existing sitminio/reports-watermarked &&
       mc mb --ignore-existing sitminio/report-archive &&
       echo Buckets created
       "
@@ -61,6 +61,7 @@
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      SPRING_AMQP_DESERIALIZATION_TRUST_ALL: "true"
     depends_on:
       - minio
       - minio-init

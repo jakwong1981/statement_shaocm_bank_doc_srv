@@ -494,17 +494,26 @@ server {
 
 | Endpoint | Method | Headers | Description |
 |---|---|---|---|
-| `/api/v1/external/reports` | POST | X-API-KEY, X-SIGNATURE | Upload PDF for watermarking |
+| `/api/v1/external/reports` | POST | X-API-KEY, X-SIGNATURE | Upload PDF (optional `report_id` to replace existing) |
 | `/api/v1/external/reports/{id}` | GET | X-API-KEY | Query report status |
 | `/api/v1/external/reports/{id}/download` | GET | X-API-KEY | Get presigned download URL |
 
 ### Example: External Upload (curl)
 
 ```bash
+# New report
 curl -X POST http://localhost:8080/api/v1/external/reports \
   -H "X-API-KEY: ak_live_sample_key_8f9021a8d0119e7a" \
   -H "X-SIGNATURE: <hmac-sha256-hash>" \
   -F "file=@financial_report.pdf" \
+  -F "benchmark_tag=Q3-AUDIT-2026"
+
+# Replace existing report (include report_id)
+curl -X POST http://localhost:8080/api/v1/external/reports \
+  -H "X-API-KEY: ak_live_sample_key_8f9021a8d0119e7a" \
+  -H "X-SIGNATURE: <hmac-sha256-hash>" \
+  -F "file=@updated_report.pdf" \
+  -F "report_id=existing-report-uuid-here" \
   -F "benchmark_tag=Q3-AUDIT-2026"
 ```
 

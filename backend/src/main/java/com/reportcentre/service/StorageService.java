@@ -31,6 +31,14 @@ public class StorageService {
         upload(watermarkedBucket, objectName, stream, size, contentType);
     }
 
+    public void deleteFromStaging(String objectName) {
+        delete(stagingBucket, objectName);
+    }
+
+    public void deleteFromWatermarked(String objectName) {
+        delete(watermarkedBucket, objectName);
+    }
+
     public InputStream downloadRaw(String objectName) {
         return download(stagingBucket, objectName);
     }
@@ -78,6 +86,18 @@ public class StorageService {
         } catch (Exception e) {
             log.error("Failed to download {} from bucket {}", objectName, bucket, e);
             throw new RuntimeException("File download failed", e);
+        }
+    }
+
+    private void delete(String bucket, String objectName) {
+        try {
+            minioClient.removeObject(RemoveObjectArgs.builder()
+                    .bucket(bucket)
+                    .object(objectName)
+                    .build());
+            log.info("Deleted {} from bucket {}", objectName, bucket);
+        } catch (Exception e) {
+            log.warn("Failed to delete {} from bucket {}: {}", objectName, bucket, e.getMessage());
         }
     }
 }

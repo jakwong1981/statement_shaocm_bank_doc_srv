@@ -22,11 +22,12 @@ public class ExternalReportApiController {
     @PostMapping
     public ResponseEntity<ApiResponse<ReportResponse>> ingest(
             @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "report_id", required = false) String reportId,
             @RequestParam(value = "benchmark_tag", required = false) String benchmarkTag,
             @RequestParam(value = "metadata", required = false) String metadata,
             HttpServletRequest request) {
         String clientId = (String) request.getAttribute("clientId");
-        ReportResponse response = reportService.upload(file, benchmarkTag, metadata,
+        ReportResponse response = reportService.uploadOrReplace(reportId, file, benchmarkTag, metadata,
                 UploaderType.THIRD_PARTY, clientId);
         return ResponseEntity.status(202).body(ApiResponse.success(response));
     }
