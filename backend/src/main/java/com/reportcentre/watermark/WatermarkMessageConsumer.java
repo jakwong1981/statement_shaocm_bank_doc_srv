@@ -1,4 +1,4 @@
-﻿package com.reportcentre.watermark;
+package com.reportcentre.watermark;
 
 import com.reportcentre.entity.Report;
 import com.reportcentre.entity.enums.ReportStatus;

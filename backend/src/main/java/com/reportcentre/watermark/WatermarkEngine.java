@@ -1,4 +1,4 @@
-﻿package com.reportcentre.watermark;
+package com.reportcentre.watermark;
 
 import com.reportcentre.service.StorageService;
 import lombok.RequiredArgsConstructor;

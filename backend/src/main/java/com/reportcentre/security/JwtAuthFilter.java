@@ -1,4 +1,4 @@
-﻿package com.reportcentre.security;
+package com.reportcentre.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,6 +19,12 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return !path.startsWith("/api/v1/admin/");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

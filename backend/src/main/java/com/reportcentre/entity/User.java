@@ -1,4 +1,4 @@
-﻿package com.reportcentre.entity;
+package com.reportcentre.entity;
 
 import com.reportcentre.entity.enums.UserRole;
 import jakarta.persistence.*;

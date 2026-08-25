@@ -1,4 +1,4 @@
-﻿package com.reportcentre.exception;
+package com.reportcentre.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

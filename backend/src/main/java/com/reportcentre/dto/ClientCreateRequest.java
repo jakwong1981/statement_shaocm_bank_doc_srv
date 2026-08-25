@@ -1,4 +1,4 @@
-﻿package com.reportcentre.dto;
+package com.reportcentre.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

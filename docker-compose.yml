@@ -1,6 +1,4 @@
-﻿version: "3.8"
-
-services:
+﻿services:
 
   minio:
     image: minio/minio:latest
@@ -24,8 +22,9 @@ services:
       - minio
     networks:
       - sit-net
+    entrypoint: /bin/sh
     command: >
-      sh -c "
+      -c "
       sleep 10 &&
       mc alias set sitminio http://minio:9000 minioadmin minioadmin &&
       mc mb --ignore-existing sitminio/report-staging-raw &&
@@ -54,10 +53,11 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:h2:mem:reportdb;MODE=DB2;DB_CLOSE_DELAY=-1
+      SPRING_PROFILES_ACTIVE: sit
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
@@ -74,7 +74,7 @@ services:
       dockerfile: Dockerfile
     container_name: sit-frontend
     ports:
-      - "80:80"
+      - "8880:80"
     depends_on:
       - backend
     networks:

@@ -1,4 +1,4 @@
-﻿package com.reportcentre.controller;
+package com.reportcentre.controller;
 
 import com.reportcentre.dto.*;
 import com.reportcentre.service.AuthService;

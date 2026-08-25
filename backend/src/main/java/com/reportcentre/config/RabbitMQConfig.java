@@ -1,4 +1,4 @@
-﻿package com.reportcentre.config;
+package com.reportcentre.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Value;

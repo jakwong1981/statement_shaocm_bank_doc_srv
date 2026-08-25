@@ -1,4 +1,4 @@
-﻿package com.reportcentre.security;
+package com.reportcentre.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

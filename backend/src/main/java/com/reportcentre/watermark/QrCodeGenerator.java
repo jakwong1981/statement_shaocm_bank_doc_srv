@@ -1,4 +1,4 @@
-﻿package com.reportcentre.watermark;
+package com.reportcentre.watermark;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;

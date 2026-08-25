@@ -1,4 +1,4 @@
-﻿package com.reportcentre.security;
+package com.reportcentre.security;
 
 import com.reportcentre.entity.ThirdPartyClient;
 import com.reportcentre.entity.enums.ClientStatus;
@@ -22,6 +22,12 @@ import java.util.List;
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
     private final ThirdPartyClientRepository clientRepository;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return !path.startsWith("/api/v1/external/");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

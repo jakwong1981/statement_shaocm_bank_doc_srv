@@ -1,4 +1,4 @@
-﻿package com.reportcentre.exception;
+package com.reportcentre.exception;
 
 public class BadRequestException extends RuntimeException {
     public BadRequestException(String message) {

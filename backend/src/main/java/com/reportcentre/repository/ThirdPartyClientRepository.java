@@ -1,4 +1,4 @@
-﻿package com.reportcentre.repository;
+package com.reportcentre.repository;
 
 import com.reportcentre.entity.ThirdPartyClient;
 import com.reportcentre.entity.enums.ClientStatus;

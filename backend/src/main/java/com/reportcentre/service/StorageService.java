@@ -1,4 +1,4 @@
-﻿package com.reportcentre.service;
+package com.reportcentre.service;
 
 import io.minio.*;
 import io.minio.http.Method;

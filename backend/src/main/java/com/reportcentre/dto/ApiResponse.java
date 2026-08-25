@@ -1,4 +1,4 @@
-﻿package com.reportcentre.dto;
+package com.reportcentre.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

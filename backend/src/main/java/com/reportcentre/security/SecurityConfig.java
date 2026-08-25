@@ -1,4 +1,4 @@
-﻿package com.reportcentre.security;
+package com.reportcentre.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

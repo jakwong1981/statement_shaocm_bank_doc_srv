@@ -1,4 +1,4 @@
-﻿package com.reportcentre.security;
+package com.reportcentre.security;
 
 import com.reportcentre.entity.ThirdPartyClient;
 import com.reportcentre.repository.ThirdPartyClientRepository;
@@ -23,6 +23,12 @@ import java.util.HexFormat;
 public class HmacSignatureFilter extends OncePerRequestFilter {
 
     private final ThirdPartyClientRepository clientRepository;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return !path.startsWith("/api/v1/external/");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

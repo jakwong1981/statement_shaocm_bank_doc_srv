@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="layout">
     <aside class="sidebar">
       <h2>Report Centre</h2>

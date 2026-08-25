@@ -1,4 +1,4 @@
-﻿spring:
+spring:
   application:
     name: report-centre
   profiles:
@@ -15,6 +15,15 @@
 
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
 
 jwt:
   secret: c2VjdXJlLXJlcG9ydC1jZW50cmUtand0LXNpZ25pbmcta2V5LW11c3QtYmUtYXQtbGVhc3QtMjU2LWJpdHM=
@@ -66,6 +75,43 @@ spring:
     port: 5672
     username: guest
     password: guest
+
+---
+spring:
+  config:
+    activate:
+      on-profile: sit
+  datasource:
+    url: jdbc:h2:mem:reportdb;MODE=DB2;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  sql:
+    init:
+      mode: always
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://minio:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
 
 ---
 spring:

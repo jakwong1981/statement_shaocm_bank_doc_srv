@@ -1,4 +1,4 @@
-﻿package com.reportcentre.dto;
+package com.reportcentre.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,8 +1,8 @@
-﻿# ====== Stage 1: Build ======
+# ====== Stage 1: Build ======
 FROM node:18-alpine AS builder
 WORKDIR /build
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 COPY . .
 RUN npm run build
 

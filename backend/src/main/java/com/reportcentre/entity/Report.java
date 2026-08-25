@@ -1,4 +1,4 @@
-﻿package com.reportcentre.entity;
+package com.reportcentre.entity;
 
 import com.reportcentre.entity.enums.ReportStatus;
 import com.reportcentre.entity.enums.UploaderType;

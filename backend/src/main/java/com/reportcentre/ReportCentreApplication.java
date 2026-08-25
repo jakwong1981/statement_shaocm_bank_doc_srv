@@ -1,4 +1,4 @@
-﻿package com.reportcentre;
+package com.reportcentre;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

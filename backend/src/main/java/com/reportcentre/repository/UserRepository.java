@@ -1,4 +1,4 @@
-﻿package com.reportcentre.repository;
+package com.reportcentre.repository;
 
 import com.reportcentre.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-﻿package com.reportcentre.exception;
+package com.reportcentre.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

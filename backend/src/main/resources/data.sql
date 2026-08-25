@@ -1,4 +1,4 @@
-﻿-- Seed Data for Simple Report Centre
+-- Seed Data for Simple Report Centre
 -- Default admin password: admin123
 
 -- 1. Default SUPER_ADMIN user

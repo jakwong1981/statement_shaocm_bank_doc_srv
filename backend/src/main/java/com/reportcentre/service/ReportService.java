@@ -1,4 +1,4 @@
-﻿package com.reportcentre.service;
+package com.reportcentre.service;
 
 import com.reportcentre.dto.ReportResponse;
 import com.reportcentre.entity.Report;

@@ -1,4 +1,4 @@
-﻿package com.reportcentre.config;
+package com.reportcentre.config;
 
 import io.minio.MinioClient;
 import org.springframework.beans.factory.annotation.Value;
