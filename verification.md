@@ -204,7 +204,7 @@ curl -o ext_watermarked.pdf -X GET http://localhost:8080/api/v1/external/reports
 | Password | `minioadmin` |
 
 **What to check:**
-- Browse buckets: `report-staging-raw` (original PDFs), `report-staging-watermarked` (processed PDFs), `report-archive`
+- Browse buckets: `staging-raw` (original PDFs), `reports-watermarked` (processed PDFs), `report-archive`
 - After uploading a report, verify files appear in both buckets
 
 ### 5.2 RabbitMQ Management
@@ -283,7 +283,7 @@ Execute these steps in order to validate the complete system:
 | 10 | Open downloaded PDF | Watermark zones visible (header, diagonal, footer, QR) |
 | 11 | Check audit logs: `GET /api/v1/admin/audit-logs` | LOGIN + UPLOAD + DOWNLOAD entries |
 | 12 | Check error logs: `GET /api/v1/admin/error-logs` | Error entries captured (if any errors occurred) |
-| 13 | Check MinIO console | Files in `report-staging-raw` and `report-staging-watermarked` |
+| 13 | Check MinIO console | Files in `staging-raw` and `reports-watermarked` |
 | 14 | Check H2 console: `SELECT * FROM REPORTS` | Report row with READY status |
 | 15 | Create client: `POST /api/v1/admin/clients` | API key returned |
 | 16 | External upload: `POST /api/v1/external/reports` with API key | Report ingested and watermarked |

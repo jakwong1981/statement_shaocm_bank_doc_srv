@@ -173,8 +173,8 @@ services:
       -c "
       sleep 10 &&
       mc alias set sitminio http://minio:9000 minioadmin minioadmin &&
-      mc mb --ignore-existing sitminio/report-staging-raw &&
-      mc mb --ignore-existing sitminio/report-staging-watermarked &&
+      mc mb --ignore-existing sitminio/staging-raw &&
+      mc mb --ignore-existing sitminio/reports-watermarked &&
       mc mb --ignore-existing sitminio/report-archive &&
       echo Buckets created
       "
@@ -207,6 +207,7 @@ services:
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      SPRING_AMQP_DESERIALIZATION_TRUST_ALL: "true"
     depends_on:
       - minio
       - minio-init
@@ -240,6 +241,11 @@ networks:
 
 ```bash
 cd statement_shaocm_bank_doc_srv
+
+# Option A: Use the startapp script (recommended)
+./startapp.sh --smoke
+
+# Option B: Use docker compose directly
 docker compose up -d --build
 ```
 
@@ -483,6 +489,7 @@ server {
 |---|---|---|---|
 | `/api/v1/admin/reports` | GET | OPERATOR, SUPER_ADMIN | Paginated report listing |
 | `/api/v1/admin/reports` | POST | OPERATOR, SUPER_ADMIN | Upload PDF report |
+| `/api/v1/admin/reports/{id}` | GET | OPERATOR, SUPER_ADMIN | Get report details |
 | `/api/v1/admin/reports/{id}/download` | GET | OPERATOR, SUPER_ADMIN | Download watermarked PDF |
 | `/api/v1/admin/clients` | GET | SUPER_ADMIN | List API clients |
 | `/api/v1/admin/clients` | POST | SUPER_ADMIN | Create new client |
@@ -550,6 +557,7 @@ curl -X POST http://localhost:8080/api/v1/admin/auth/login \
 | "Bean creation exception" | Ensure MinIO buckets exist (minio-init container ran successfully) |
 | "H2 console 404" | Ensure `sit` or `dev` profile is active (check startup logs for profile) |
 | Backend health check failing | Actuator endpoint at `/actuator/health` requires `spring-boot-starter-actuator` dependency in pom.xml |
+| MinIO bucket not found | Ensure minio-init completed: `docker logs sit-minio-init`; bucket names must be `staging-raw` and `reports-watermarked` |
 
 ### Frontend Issues
 
@@ -568,6 +576,7 @@ curl -X POST http://localhost:8080/api/v1/admin/auth/login \
 | Report stuck in PENDING_WATERMARK | Check RabbitMQ queue for unprocessed messages; verify consumer logs |
 | Watermark fails with error | Check backend logs for `WatermarkEngine` errors; PDF may be encrypted |
 | QR code missing | Check ZXing dependency is included in pom.xml |
+| RabbitMQ deserialization error (`CollSer`) | Spring AMQP 3.x blocks Java serialization by default; set `SPRING_AMQP_DESERIALIZATION_TRUST_ALL=true` in docker-compose.yml |
 
 ### Database Issues (Dev)
 
