@@ -345,7 +345,7 @@ divider
 echo ""
 
 # Handle sub-commands
-[ "$ACTION" = "stop" ]   && do_stop
+[ "$ACTION" = "stop" ]   && { preflight; do_stop; }
 [ "$ACTION" = "status" ] && { preflight; do_status; }
 
 preflight
